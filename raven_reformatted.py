@@ -19,9 +19,8 @@ engine.setProperty("voice", voices[1].id)
 # Greeting when ran
 raven_greetings = [
     "at the ready boss",
-    "what can I do for you today",
-    "How can i help you today",
     "greetings creator",
+    "online and ready",
 ]
 hello = random.choice(raven_greetings)
 
@@ -35,8 +34,15 @@ raven_command_responses = [
 ]
 random_response = random.choice(raven_command_responses)
 
-today = date.today()
+# Said after activation phrase
+raven_active_phrases = [
+    "What can I do for you",
+    "Ready for input",
+    "How can I help",
+]
+at_the_ready = random.choice(raven_active_phrases)
 
+today = date.today()
 
 def talk(text):
     engine.say(text)
@@ -47,7 +53,7 @@ def take_command():
     try:
         with sr.Microphone() as source:
             print("listening...")
-            voice = listener.listen(source, phrase_time_limit=15, timeout=3600)
+            voice = listener.listen(source, phrase_time_limit=6, timeout=3600)
             command = "waiting"
             command = listener.recognize_google(voice)
             command = command.lower()
@@ -74,25 +80,28 @@ weather_desc = r.html.find("div.VQF4g", first=True).find("span#wob_dc", first=Tr
 humidity = r.html.find("div.wtsRwe", first=True).find("span#wob_hm", first=True).text
 wind_speed = r.html.find("div.wtsRwe", first=True).find("span#wob_ws", first=True).text
 
+def time():
+    now = datetime.now()
+    time = now.strftime("%I:%M")
+    talk("Current time is " + time)
 
 def run_raven():
+    talk(at_the_ready)
     command = take_command()
 
     # Searches youtube and plays the most relevant result
-    if "raven play" in command:
-        song = command.replace("raven play", "")
+    if "play" in command:
+        song = command.replace("play", "")
         talk("playing " + song)
         pywhatkit.playonyt(song)
 
-    elif "raven" in command and "time" in command:
-        now = datetime.now()
-        time = now.strftime("%I:%M")
-        talk("Current time is " + time)
+    elif "time" in command:
+        time()
 
     # Reads wiki articles or runs a search
-    elif "raven look up" in command:
+    elif "look up" in command:
         try:
-            topic = command.replace("raven look up", "")
+            topic = command.replace("look up", "")
             info = wikipedia.summary(topic.strip(), 1)
             talk(info)
         except wikipedia.exceptions.PageError:
@@ -102,20 +111,17 @@ def run_raven():
             pywhatkit.search(topic.strip())
             pass
 
-    elif "raven" in command and "go to sleep" in command:
+    elif "go to sleep" in command:
         talk("shutting down. see you later")
         stop_raven()
 
-    elif "raven" in command and "are you there" in command:
-        talk("I am, what can i do for you")
-
-    elif "raven" in command and "date" in command:
+    elif "date" in command:
         talk(today)
 
     # These link opening commands are a bit complicated due to an issue with opening the wrong browser
-    elif "raven open" in command:
+    elif "open" in command:
         talk(random_response)
-        website = command.replace("raven open", "")
+        website = command.replace("open", "")
         link = website.replace(" ", "") + ".com"
         wb.open("https://www.google.com")
         z(0.15)
@@ -126,9 +132,10 @@ def run_raven():
         z(0.15)
         py.write(link)
         z(0.15)
+        py.hotkey("space")
         py.hotkey("enter")
 
-    elif "raven" in command and "power down" in command:
+    elif "power down" in command:
         talk("powering down boss")
         py.hotkey("win", "x")
         z(0.25)
@@ -136,7 +143,7 @@ def run_raven():
         z(0.25)
         py.hotkey("s")
 
-    elif "raven" in command and "new doc" in command:
+    elif "new doc" in command:
         talk(random_response)
         wb.open("https://www.google.com")
         z(0.15)
@@ -149,7 +156,7 @@ def run_raven():
         z(0.15)
         py.hotkey("enter")
 
-    elif "raven" in command and "new sheet" in command:
+    elif "new sheet" in command:
         talk(random_response)
         wb.open("https://www.google.com")
         z(0.15)
@@ -163,25 +170,25 @@ def run_raven():
         py.hotkey("enter")
 
     # This obviously only works if the editor is pulled up
-    elif "raven" in command and "restart" in command:
+    elif "restart" in command:
         talk("will do. see you in a moment")
         py.hotkey("ctrl", "f5")
 
-    elif "raven google" in command:
+    elif "google" in command:
         talk(random_response)
-        text = command.replace("raven google", "")
+        text = command.replace("google", "")
         pywhatkit.search(text.strip())
 
-    elif "raven" in command and "close tab" in command:
+    elif "close tab" in command:
         talk(random_response)
         py.hotkey("ctrl", "w")
 
     # Works a bit inconsistently, maybe activation phrase is too long
-    elif "raven find 3d print files of" in command:
+    elif "find 3d print files of" in command:
         talk(random_response)
-        text = command.replace("raven find 3d print files of", "")
+        text = command.replace("find 3d print files of", "")
         wb.open("https://www.thingiverse.com/")
-        z(1.25)
+        z(5)
         py.hotkey("tab")
         z(0.4)
         py.hotkey("tab")
@@ -190,11 +197,11 @@ def run_raven():
         z(0.2)
         py.hotkey("enter")
 
-    elif "raven search youtube" in command:
+    elif "search youtube" in command:
         talk(random_response)
-        text = command.replace("raven search youtube for", "")
+        text = command.replace("search youtube for", "")
         wb.open("https://www.youtube.com/")
-        z(0.5)
+        z(1.5)
         py.hotkey("tab")
         z(0.2)
         py.hotkey("tab")
@@ -205,35 +212,35 @@ def run_raven():
         z(0.10)
         py.hotkey("enter")
 
-    elif "raven image search" in command:
+    elif "image search" in command:
         talk(random_response)
-        text = command.replace("raven image search", "")
+        text = command.replace("image search", "")
         wb.open("https://www.google.com/imghp")
         z(0.5)
         py.write(text.strip())
         z(0.10)
         py.hotkey("enter")
 
-    elif "raven" in command and "weather" in command:
+    elif "weather" in command:
         talk("it is " + weather_desc)
         z(0.15)
         talk("the current temp is " + temp)
         z(0.3)
 
-    elif "raven type" in command:
+    elif "type" in command:
         talk(random_response)
-        t2t = command.replace("raven type", "")
+        t2t = command.replace("type", "")
         py.write(t2t.strip())
 
     # Only works with some keys at the moment
-    elif "raven" in command and "press" in command:
+    elif "press" in command:
         talk(random_response)
-        key = command.replace("raven press", "")
+        key = command.replace("press", "")
         py.hotkey(key.strip())
 
-    elif "raven" in command and "launch" in command:
+    elif "launch" in command:
         talk(random_response)
-        program = command.replace("raven launch", "")
+        program = command.replace("launch", "")
         py.hotkey("win")
         z(0.5)
         py.write(program.strip())
@@ -241,13 +248,23 @@ def run_raven():
         py.hotkey("enter")
 
     else:
-        print("...")
+        talk("Let me know if you need anything boss")
+        pass
+
+    z(0.5)
+    talk('returning to regular protocols')
+
+def activation():
+    command = take_command()
+
+    if "raven" in command:
+        run_raven()
 
 
 talk(hello)
 while True:
     try:
-        run_raven()
+        activation()
     # Had an odd issue where Raven would sometimes shut down, this seemed to fix it
     except UnboundLocalError:
         print("Raven has stopped working")
