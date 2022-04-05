@@ -10,6 +10,7 @@ import pyautogui as py
 from time import sleep as z
 from requests_html import HTMLSession
 from datetime import datetime
+import keyboard
 
 listener = sr.Recognizer()
 engine = pyttsx3.init()
@@ -42,7 +43,15 @@ raven_active_phrases = [
 ]
 at_the_ready = random.choice(raven_active_phrases)
 
+deactivation_phrases = [
+    "returning to regular protocols",
+    "let me know if you need anything",
+    "just say my name for further assistance",
+]
+deactivation = random.choice(deactivation_phrases)
+
 today = date.today()
+
 
 def talk(text):
     engine.say(text)
@@ -57,6 +66,7 @@ def take_command():
             command = "waiting"
             command = listener.recognize_google(voice)
             command = command.lower()
+
     except:
         pass
     return command
@@ -80,10 +90,12 @@ weather_desc = r.html.find("div.VQF4g", first=True).find("span#wob_dc", first=Tr
 humidity = r.html.find("div.wtsRwe", first=True).find("span#wob_hm", first=True).text
 wind_speed = r.html.find("div.wtsRwe", first=True).find("span#wob_ws", first=True).text
 
+
 def time():
     now = datetime.now()
     time = now.strftime("%I:%M")
     talk("Current time is " + time)
+
 
 def run_raven():
     talk(at_the_ready)
@@ -133,6 +145,9 @@ def run_raven():
         py.write(link)
         z(0.15)
         py.hotkey("space")
+        z(0.15)
+        py.hotkey("backspace")
+        z(0.15)
         py.hotkey("enter")
 
     elif "power down" in command:
@@ -184,16 +199,17 @@ def run_raven():
         py.hotkey("ctrl", "w")
 
     # Works a bit inconsistently, maybe activation phrase is too long
-    elif "find 3d print files of" in command:
-        talk(random_response)
-        text = command.replace("find 3d print files of", "")
+    elif "3d print" in command:
+        talk("What 3d print files would you like to search for")
+        command = take_command()
+        query = command
         wb.open("https://www.thingiverse.com/")
         z(5)
         py.hotkey("tab")
         z(0.4)
         py.hotkey("tab")
         z(0.4)
-        py.write(text.strip())
+        py.write(query.strip())
         z(0.2)
         py.hotkey("enter")
 
@@ -201,7 +217,9 @@ def run_raven():
         talk(random_response)
         text = command.replace("search youtube for", "")
         wb.open("https://www.youtube.com/")
-        z(1.5)
+        z(4)
+        py.hotkey("tab")
+        z(0.2)
         py.hotkey("tab")
         z(0.2)
         py.hotkey("tab")
@@ -248,17 +266,24 @@ def run_raven():
         py.hotkey("enter")
 
     else:
-        talk("Let me know if you need anything boss")
+        talk("No command detected")
         pass
 
     z(0.5)
-    talk('returning to regular protocols')
+    talk(deactivation)
+
 
 def activation():
     command = take_command()
 
     if "raven" in command:
         run_raven()
+
+    # This allows you to call upon your VA without voice. You have to press it a couple times initially. Will hopefully work this out soon
+    while True:
+        if keyboard.is_pressed("right"):
+            z(0.75)
+            run_raven()
 
 
 talk(hello)
