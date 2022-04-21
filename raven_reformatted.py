@@ -11,6 +11,7 @@ from time import sleep as z
 from requests_html import HTMLSession
 from datetime import datetime
 import keyboard
+from googletrans import Translator
 
 listener = sr.Recognizer()
 engine = pyttsx3.init()
@@ -46,12 +47,12 @@ at_the_ready = random.choice(raven_active_phrases)
 deactivation_phrases = [
     "returning to regular protocols",
     "let me know if you need anything",
-    "just say my name for further assistance",
 ]
 deactivation = random.choice(deactivation_phrases)
 
 today = date.today()
 
+translater = Translator()
 
 def talk(text):
     engine.say(text)
@@ -90,12 +91,10 @@ weather_desc = r.html.find("div.VQF4g", first=True).find("span#wob_dc", first=Tr
 humidity = r.html.find("div.wtsRwe", first=True).find("span#wob_hm", first=True).text
 wind_speed = r.html.find("div.wtsRwe", first=True).find("span#wob_ws", first=True).text
 
-
 def time():
     now = datetime.now()
     time = now.strftime("%I:%M")
     talk("Current time is " + time)
-
 
 def run_raven():
     talk(at_the_ready)
@@ -213,6 +212,7 @@ def run_raven():
         z(0.2)
         py.hotkey("enter")
 
+
     elif "search youtube" in command:
         talk(random_response)
         text = command.replace("search youtube for", "")
@@ -265,6 +265,48 @@ def run_raven():
         z(0.5)
         py.hotkey("enter")
 
+    elif "translate" in command:
+        talk("What is your target language")
+        language = take_command()
+
+        if "spanish" in language:
+            target = "es"
+
+        elif "english" in language:
+            target = "en"
+
+        elif "chinese" in language:  # not working
+            target = "zh-tw"
+
+        elif "french" in language:
+            target = "fr"
+
+        elif "german" in language:
+            target = "de"
+
+        elif "greek" in language:
+            target = "el"
+
+        elif "japanese" in language:  # not working
+            target = "ja"
+
+        elif "korean" in language:  # not working
+            target = "ko"
+
+        elif "russian" in language:  # not working
+            target = "ru"
+
+        else:
+            talk("no language detected")
+            pass
+
+        input = command.replace("translate", "")
+        out = translater.translate(input, dest=target)
+
+        talk(out.text)
+        print(language)
+        print(out.text)
+
     else:
         talk("No command detected")
         pass
@@ -272,21 +314,16 @@ def run_raven():
     z(0.5)
     talk(deactivation)
 
-
 def activation():
-    command = take_command()
 
-    if "raven" in command:
-        run_raven()
-
-    # This allows you to call upon your VA without voice. You have to press it a couple times initially. Will hopefully work this out soon
+#This allows you to call upon your VA. You have to press it a couple times initially. Will hopefully work this out soon
     while True:
-        if keyboard.is_pressed("right"):
+        if keyboard.is_pressed("left") and keyboard.is_pressed("right"):
             z(0.75)
             run_raven()
 
-
 talk(hello)
+talk("Press the left and right arrow keys at the same time to reach me")
 while True:
     try:
         activation()
